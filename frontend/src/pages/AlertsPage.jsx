@@ -204,41 +204,43 @@ export const AlertsPage = () => {
                     <strong>Standard Operating Procedure:</strong> {alert.recommended_action}
                   </div>
 
-                  {/* Incident Command Actions */}
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    {alert.status === 'active' && (
-                      <button
-                        onClick={() => handleAlertAction(alert.id, 'acknowledge')}
-                        className="btn-secondary"
-                        style={{ fontSize: '0.78rem' }}
-                      >
-                        <Check size={14} color="#0284c7" />
-                        <span>Acknowledge</span>
-                      </button>
-                    )}
+                  {/* Incident Command Actions (Hidden from public; escalate restricted to admin) */}
+                  {currentUser?.role !== 'public' && (
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      {alert.status === 'active' && (
+                        <button
+                          onClick={() => handleAlertAction(alert.id, 'acknowledge')}
+                          className="btn-secondary"
+                          style={{ fontSize: '0.78rem' }}
+                        >
+                          <Check size={14} color="#0284c7" />
+                          <span>Acknowledge</span>
+                        </button>
+                      )}
 
-                    {alert.status !== 'resolved' && (
-                      <button
-                        onClick={() => handleAlertAction(alert.id, 'resolve')}
-                        className="btn-secondary"
-                        style={{ fontSize: '0.78rem', color: '#065f46' }}
-                      >
-                        <CheckCircle size={14} color="#059669" />
-                        <span>Mark as Resolved</span>
-                      </button>
-                    )}
+                      {alert.status !== 'resolved' && (
+                        <button
+                          onClick={() => handleAlertAction(alert.id, 'resolve')}
+                          className="btn-secondary"
+                          style={{ fontSize: '0.78rem', color: '#065f46' }}
+                        >
+                          <CheckCircle size={14} color="#059669" />
+                          <span>Mark as Resolved</span>
+                        </button>
+                      )}
 
-                    {isHigh && alert.status !== 'resolved' && (
-                      <button
-                        onClick={() => handleAlertAction(alert.id, 'escalate')}
-                        className="btn-danger"
-                        style={{ fontSize: '0.78rem' }}
-                      >
-                        <AlertOctagon size={14} />
-                        <span>Escalate to Critical</span>
-                      </button>
-                    )}
-                  </div>
+                      {currentUser?.role === 'admin' && isHigh && alert.status !== 'resolved' && (
+                        <button
+                          onClick={() => handleAlertAction(alert.id, 'escalate')}
+                          className="btn-danger"
+                          style={{ fontSize: '0.78rem' }}
+                        >
+                          <AlertOctagon size={14} />
+                          <span>Escalate to Critical</span>
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             );

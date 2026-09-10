@@ -1,5 +1,15 @@
 import React from 'react';
 
+export const getRiskSymbol = (level) => {
+  if (!level) return '';
+  const l = level.toLowerCase();
+  if (l.includes('critical')) return '🛑';
+  if (l.includes('high')) return '⚠️';
+  if (l.includes('moderate')) return '▲';
+  if (l.includes('safe')) return '✓';
+  return '';
+};
+
 export const RiskCard = ({ title, value, subtitle, icon: Icon, badge, variant = 'default' }) => {
   // Variant border & accent colors
   const variantStyles = {
@@ -11,6 +21,7 @@ export const RiskCard = ({ title, value, subtitle, icon: Icon, badge, variant = 
   };
 
   const style = variantStyles[variant] || variantStyles.default;
+  const symbol = getRiskSymbol(badge || variant);
 
   return (
     <div
@@ -50,7 +61,8 @@ export const RiskCard = ({ title, value, subtitle, icon: Icon, badge, variant = 
         </div>
         {badge && (
           <span className={`badge-${badge.toLowerCase()}`}>
-            {badge}
+            <span aria-hidden="true">{symbol}</span>
+            <span>{badge}</span>
           </span>
         )}
       </div>

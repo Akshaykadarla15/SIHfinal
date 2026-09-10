@@ -1,11 +1,53 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useFlood } from '../context/FloodContext';
+import { useAuth } from '../context/AuthContext';
 import { LeafletMap } from '../maps/LeafletMap';
-import { Search, Brain, MapPin, AlertTriangle, Shield, Clock, Layers, Waves, ArrowRight } from 'lucide-react';
+import { Search, Brain, MapPin, AlertTriangle, Shield, Clock, Layers, Waves, ArrowRight, Camera } from 'lucide-react';
+import axios from 'axios';
 
 export const FloodMapPage = () => {
   const { dashboardData, selectedZone, setSelectedZone, setExplainZone, city } = useFlood();
+  const { currentUser } = useAuth();
+  const isPublic = currentUser?.role === 'public';
+
   const [searchQuery, setSearchQuery] = useState('');
+  const [citizenReports, setCitizenReports] = useState([
+    {
+      id: 101,
+      city: 'Hyderabad',
+      location_name: 'Begumpet Underpass',
+      latitude: 17.4447,
+      longitude: 78.4664,
+      water_depth: 'Waist-deep (> 2 ft)',
+      description: 'Rasoolpura underpass submerged. Municipal pumps actively draining.',
+      reporter_name: 'Citizen Vikram',
+      status: 'verified'
+    },
+    {
+      id: 102,
+      city: 'Hyderabad',
+      location_name: 'Kukatpally Culvert',
+      latitude: 17.4933,
+      longitude: 78.3914,
+      water_depth: 'Knee-deep (1-2 ft)',
+      description: 'Water overflowing near metro entrance.',
+      reporter_name: 'Resident Suresh',
+      status: 'verified'
+    }
+  ]);
+
+  useEffect(() => {
+    // Fetch live citizen waterlogging reports from backend
+    axios.get(`http://127.0.0.1:8000/api/reports/waterlogging?city=${encodeURIComponent(city)}`)
+      .then(res => {
+        if (res.data && res.data.length > 0) {
+          setCitizenReports(res.data);
+        }
+      })
+      .catch(() => {
+        // Fallback to initial seeds
+      });
+  }, [city]);
 
   const zones = dashboardData?.zones || [];
 
@@ -18,40 +60,67 @@ export const FloodMapPage = () => {
       {/* Top Search & Filter Bar */}
       <div className="gov-card" style={{ padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
         <div>
-          <h2 style={{ fontSize: '1.25rem', color: '#0f172a', margin: 0 }}>
-            Geospatial Flood Risk & Nowcasting Map ({city})
-          </h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <h2 style={{ fontSize: '1.25rem', color: '#0f172a', margin: 0 }}>
+              Geospatial Flood Risk & Nowcasting Map ({city})
+            </h2>
+            {isPublic && (
+              <span style={{ background: '#dcfce7', color: '#15803d', fontSize: '0.68rem', fontWeight: 800, padding: '2px 8px', borderRadius: '999px' }}>
+                CITIZEN PORTAL (READ-ONLY)
+              </span>
+            )}
+          </div>
           <div style={{ fontSize: '0.78rem', color: '#64748b' }}>
-            Interactive early-warning GIS overlay displaying localized waterlogging susceptibility
+            {isPublic
+              ? 'Locate your neighborhood, view road waterlogging susceptibility, and see crowdsourced citizen reports'
+              : 'Interactive early-warning GIS overlay displaying localized waterlogging susceptibility and citizen hazard pins'}
           </div>
         </div>
 
         {/* Search Box */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          background: '#f8fafc',
-          border: '1px solid #cbd5e1',
-          padding: '6px 12px',
-          borderRadius: '8px',
-          width: '280px'
-        }}>
-          <Search size={16} color="#64748b" />
-          <input
-            type="text"
-            placeholder="Search locality (e.g. Kukatpally)..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              outline: 'none',
-              fontSize: '0.85rem',
-              width: '100%',
-              color: '#0f172a'
-            }}
-          />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            background: '#f8fafc',
+            border: '1px solid #cbd5e1',
+            padding: '6px 12px',
+            borderRadius: '8px',
+            width: '280px'
+          }}>
+            <Search size={16} color="#64748b" />
+            <input
+              type="text"
+              placeholder="Search locality (e.g. Kukatpally)..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                outline: 'none',
+                fontSize: '0.85rem',
+                width: '100%',
+                color: '#0f172a'
+              }}
+            />
+          </div>
+
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            fontSize: '0.75rem',
+            background: '#ecfdf5',
+            color: '#065f46',
+            border: '1px solid #a7f3d0',
+            padding: '5px 10px',
+            borderRadius: '6px',
+            fontWeight: 700
+          }}>
+            <Camera size={14} color="#16a34a" />
+            <span>{citizenReports.length} Citizen Pins Active</span>
+          </div>
         </div>
       </div>
 
@@ -65,6 +134,7 @@ export const FloodMapPage = () => {
         <div className="gov-card" style={{ padding: 0, overflow: 'hidden' }}>
           <LeafletMap
             zones={filteredZones}
+            citizenReports={citizenReports}
             height="620px"
             showControls={true}
             onSelectZone={(z) => setSelectedZone(z)}
@@ -98,53 +168,37 @@ export const FloodMapPage = () => {
                 </div>
 
                 {/* Metrics Table */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.82rem', marginBottom: '16px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 8px', background: '#f8fafc', borderRadius: '6px' }}>
-                    <span style={{ color: '#64748b' }}>Flood Probability:</span>
-                    <strong style={{ color: selectedZone.flood_probability >= 75 ? '#dc2626' : '#0284c7', fontSize: '1rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '14px', fontSize: '0.8rem' }}>
+                  <div style={{ background: '#f8fafc', padding: '8px', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+                    <div style={{ color: '#64748b', fontSize: '0.7rem' }}>Flood Probability</div>
+                    <strong style={{ fontSize: '1.15rem', color: selectedZone.flood_probability >= 75 ? '#dc2626' : '#0284c7' }}>
                       {selectedZone.flood_probability}%
                     </strong>
                   </div>
 
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 8px', background: '#f8fafc', borderRadius: '6px' }}>
-                    <span style={{ color: '#64748b' }}>Expected Flooding:</span>
-                    <strong style={{ color: '#991b1b' }}>{selectedZone.predicted_time}</strong>
-                  </div>
-
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 8px', background: '#f8fafc', borderRadius: '6px' }}>
-                    <span style={{ color: '#64748b' }}>Current Rainfall:</span>
-                    <strong>{selectedZone.rainfall_rate} mm/hr</strong>
-                  </div>
-
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 8px', background: '#f8fafc', borderRadius: '6px' }}>
-                    <span style={{ color: '#64748b' }}>Forecast Rainfall:</span>
-                    <strong>{selectedZone.forecast_rainfall} mm/hr</strong>
-                  </div>
-
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 8px', background: '#f8fafc', borderRadius: '6px' }}>
-                    <span style={{ color: '#64748b' }}>Drain Capacity:</span>
-                    <strong>{selectedZone.drainage_capacity} mm/hr</strong>
-                  </div>
-
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 8px', background: '#f8fafc', borderRadius: '6px' }}>
-                    <span style={{ color: '#64748b' }}>Drain Load ({selectedZone.drain_id}):</span>
-                    <strong style={{ color: selectedZone.drainage_utilization > 80 ? '#dc2626' : '#0f172a' }}>
-                      {selectedZone.drainage_utilization}%
+                  <div style={{ background: '#f8fafc', padding: '8px', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+                    <div style={{ color: '#64748b', fontSize: '0.7rem' }}>Predicted Inundation</div>
+                    <strong style={{ fontSize: '0.88rem', color: '#1e293b' }}>
+                      {selectedZone.predicted_time}
                     </strong>
                   </div>
 
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 8px', background: '#f8fafc', borderRadius: '6px' }}>
-                    <span style={{ color: '#64748b' }}>Terrain Elevation:</span>
-                    <strong>{selectedZone.elevation} m (MSL)</strong>
+                  <div style={{ background: '#f8fafc', padding: '8px', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+                    <div style={{ color: '#64748b', fontSize: '0.7rem' }}>Rainfall Intensity</div>
+                    <strong style={{ fontSize: '0.88rem', color: '#1e293b' }}>
+                      {selectedZone.rainfall_rate} mm/hr
+                    </strong>
                   </div>
 
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 8px', background: '#f8fafc', borderRadius: '6px' }}>
-                    <span style={{ color: '#64748b' }}>Water Accumulation:</span>
-                    <strong style={{ color: '#ea580c' }}>{selectedZone.water_accumulation || 'Moderate'}</strong>
+                  <div style={{ background: '#f8fafc', padding: '8px', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+                    <div style={{ color: '#64748b', fontSize: '0.7rem' }}>Drain Load ({selectedZone.drain_id})</div>
+                    <strong style={{ fontSize: '0.88rem', color: selectedZone.drainage_utilization > 80 ? '#dc2626' : '#1e293b' }}>
+                      {selectedZone.drainage_utilization}%
+                    </strong>
                   </div>
                 </div>
 
-                {/* Recommendation Box */}
+                {/* Recommended action */}
                 <div style={{
                   background: '#eff6ff',
                   border: '1px solid #bfdbfe',
@@ -175,8 +229,8 @@ export const FloodMapPage = () => {
           ) : (
             <div className="gov-card" style={{ padding: '30px 20px', textAlign: 'center', color: '#64748b' }}>
               <MapPin size={32} color="#94a3b8" style={{ margin: '0 auto 10px auto' }} />
-              <div style={{ fontWeight: 600 }}>Click any zone pin on the map</div>
-              <div style={{ fontSize: '0.78rem' }}>Inspect localized rainfall, drainage load, and AI nowcasting telemetry.</div>
+              <div style={{ fontWeight: 600 }}>Click any zone pin or camera icon</div>
+              <div style={{ fontSize: '0.78rem' }}>Inspect localized rainfall, drainage load, or citizen hazard reports.</div>
             </div>
           )}
 

@@ -1,12 +1,14 @@
 import io
 import csv
 import datetime
-from fastapi import APIRouter, Depends, Query, Response
+from typing import List
+from fastapi import APIRouter, Depends, Query, Response, HTTPException
 from sqlalchemy.orm import Session
 from database import get_db
 from routes.risk_zones import build_zone_dicts
 from services.flood_calculator import aggregate_city_risk
-from models import Alert, Location
+from models import Alert, Location, CitizenReport
+from schemas import CitizenReportCreate, CitizenReportResponse
 
 router = APIRouter(prefix="/api/reports", tags=["Municipal Reports"])
 
@@ -71,3 +73,63 @@ def download_csv_report(city: str = Query("Hyderabad"), db: Session = Depends(ge
     response = Response(content=output.getvalue(), media_type="text/csv")
     response.headers["Content-Disposition"] = f"attachment; filename=Flood_Risk_Report_{city}_{datetime.date.today()}.csv"
     return response
+
+@router.post("/waterlogging", response_model=CitizenReportResponse)
+def submit_waterlogging_report(payload: CitizenReportCreate, db: Session = Depends(get_db)):
+    """
+    Accepts crowdsourced citizen flood and waterlogging reports with GPS coordinates,
+    depth classification, optional photo attachment, and description.
+    """
+    report = CitizenReport(
+        city=payload.city or "Hyderabad",
+        location_name=payload.location_name,
+        latitude=payload.latitude,
+        longitude=payload.longitude,
+        water_depth=payload.water_depth or "Knee-deep (1-2 ft)",
+        description=payload.description,
+        photo_url=payload.photo_url,
+        reporter_name=payload.reporter_name or "Concerned Citizen",
+        status="pending"
+    )
+    db.add(report)
+    db.commit()
+    db.refresh(report)
+
+    return CitizenReportResponse(
+        id=report.id,
+        city=report.city,
+        location_name=report.location_name,
+        latitude=report.latitude,
+        longitude=report.longitude,
+        water_depth=report.water_depth,
+        description=report.description,
+        photo_url=report.photo_url,
+        reporter_name=report.reporter_name,
+        status=report.status,
+        reported_at=report.reported_at.strftime("%Y-%m-%d %H:%M:%S")
+    )
+
+@router.get("/waterlogging", response_model=List[CitizenReportResponse])
+def get_waterlogging_reports(city: str = Query("Hyderabad"), db: Session = Depends(get_db)):
+    """
+    Returns all submitted crowdsourced citizen reports for the specified city,
+    allowing officer geospatial overlays and public awareness feeds.
+    """
+    reports = db.query(CitizenReport).filter(CitizenReport.city == city).order_by(CitizenReport.reported_at.desc()).all()
+    return [
+        CitizenReportResponse(
+            id=r.id,
+            city=r.city,
+            location_name=r.location_name,
+            latitude=r.latitude,
+            longitude=r.longitude,
+            water_depth=r.water_depth,
+            description=r.description,
+            photo_url=r.photo_url,
+            reporter_name=r.reporter_name,
+            status=r.status,
+            reported_at=r.reported_at.strftime("%Y-%m-%d %H:%M:%S")
+        )
+        for r in reports
+    ]
+

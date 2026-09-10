@@ -27,19 +27,22 @@ class XAIFactors(BaseModel):
 
 class PredictionOutput(BaseModel):
     flood_probability: float
+    uncertainty: Optional[float] = 5.4
+    confidence_band: Optional[str] = "± 5.4%"
     risk_level: str
     predicted_time: str
     recommended_action: str
     confidence_score: float = 94.2
     xai_factors: XAIFactors
+    global_feature_importances: Optional[Dict[str, float]] = None
     nowcast_timeline: List[NowcastWindow]
 
 class SimulationInput(BaseModel):
-    rainfall_intensity: float = Field(..., ge=10, le=150)
-    forecast_rainfall: float = Field(..., ge=10, le=150)
-    drainage_capacity: float = Field(..., ge=10, le=150)
-    drainage_blockage: float = Field(..., ge=0, le=100)
-    elevation: Optional[float] = 12.0
+    rainfall_intensity: float = Field(..., ge=0, le=300, description="Simulated rainfall intensity mm/hr (0-300)")
+    forecast_rainfall: float = Field(..., ge=0, le=300, description="Simulated forecast rainfall mm/hr (0-300)")
+    drainage_capacity: float = Field(..., ge=5, le=300, description="Simulated drainage capacity mm/hr (5-300)")
+    drainage_blockage: float = Field(..., ge=0, le=100, description="Culvert blockage percentage (0-100)")
+    elevation: Optional[float] = Field(default=12.0, ge=-10, le=500)
     historical_flood_risk: Optional[str] = "High"
     target_city: Optional[str] = "Hyderabad"
 
@@ -76,7 +79,7 @@ class AlertActionInput(BaseModel):
 class DrainageUpdateInput(BaseModel):
     drain_id: str
     blockage_status: str  # "Clear", "Minor", "Suspected", "Severe"
-    blockage_percentage: float
+    blockage_percentage: float = Field(..., ge=0, le=100, description="Blockage percentage (0-100)")
     reported_by: Optional[str] = "Field Team"
 
 class LoginRequest(BaseModel):
@@ -89,3 +92,29 @@ class UserResponse(BaseModel):
     role: str
     name: str
     badge: Optional[str] = None
+    token: Optional[str] = None
+    token_type: Optional[str] = "bearer"
+
+class CitizenReportCreate(BaseModel):
+    city: Optional[str] = "Hyderabad"
+    location_name: str
+    latitude: float
+    longitude: float
+    water_depth: Optional[str] = "Knee-deep (1-2 ft)"
+    description: str
+    photo_url: Optional[str] = None
+    reporter_name: Optional[str] = "Concerned Citizen"
+
+class CitizenReportResponse(BaseModel):
+    id: int
+    city: str
+    location_name: str
+    latitude: float
+    longitude: float
+    water_depth: str
+    description: str
+    photo_url: Optional[str] = None
+    reporter_name: str
+    status: str
+    reported_at: str
+

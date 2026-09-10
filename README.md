@@ -129,14 +129,31 @@ Open a second PowerShell terminal:
 cd frontend
 
 # Install npm packages
-npm install
+npm.cmd install
 
 # Start Vite development server
-npm run dev
+npm.cmd run dev
 ```
 *The frontend web dashboard will be accessible at `http://localhost:5173`.*
 
 ---
+
+### Step C: Docker Deployment (Single-Command Run)
+You can build and spin up both the FastAPI backend and Nginx-served frontend using Docker Compose:
+
+```bash
+# Build and launch all services in background
+docker compose up --build -d
+
+# Check running status
+docker compose ps
+
+# View backend logs
+docker compose logs -f backend
+```
+- Frontend: `http://localhost:5173`
+- Backend API & Swagger: `http://localhost:8000/docs`
+
 
 ## 🏆 7. SIH Presentation Demonstration Flow (10 Steps)
 

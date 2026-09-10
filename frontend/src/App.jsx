@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { AuthProvider } from './context/AuthContext';
+import React, { useState, useEffect } from 'react';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { FloodProvider, useFlood } from './context/FloodContext';
+import { LanguageProvider } from './context/LanguageContext';
 import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
 import { DemoBanner } from './components/DemoBanner';
@@ -18,17 +19,58 @@ import { PublicWarningPage } from './pages/PublicWarningPage';
 import { HistoricalPage } from './pages/HistoricalPage';
 import { ReportsPage } from './pages/ReportsPage';
 import { LoginPage } from './pages/LoginPage';
+import { FieldInspectionsPage } from './pages/FieldInspectionsPage';
+import { ReportWaterloggingPage } from './pages/ReportWaterloggingPage';
+import { NotFoundPage } from './pages/NotFoundPage';
+import { ErrorBoundary } from './components/ErrorBoundary';
+
+export const ROLE_PERMISSIONS = {
+  admin: {
+    home: 'dashboard',
+    allowed: ['landing', 'dashboard', 'map', 'rainfall', 'drainage', 'predictions', 'simulation', 'alerts', 'historical', 'reports', 'login']
+  },
+  officer: {
+    home: 'dashboard',
+    allowed: ['landing', 'dashboard', 'map', 'drainage', 'alerts', 'field-inspections', 'login']
+  },
+  public: {
+    home: 'public-warning',
+    allowed: ['landing', 'public-warning', 'map', 'report-waterlogging', 'reports', 'login']
+  }
+};
 
 const MainContent = () => {
-  const [activeTab, setActiveTab] = useState('landing');
+  const { currentUser } = useAuth();
+  const role = currentUser?.role || 'admin';
+  const roleConfig = ROLE_PERMISSIONS[role] || ROLE_PERMISSIONS.admin;
+
+  const [activeTab, setActiveTab] = useState(() => roleConfig.home);
   const { explainZone, setExplainZone } = useFlood();
 
+  // Route gating: if role changes or activeTab is not allowed, redirect to role home
+  useEffect(() => {
+    if (!roleConfig.allowed.includes(activeTab)) {
+      setActiveTab(roleConfig.home);
+    }
+  }, [role, roleConfig]);
+
+  const handleNavigate = (tab) => {
+    if (roleConfig.allowed.includes(tab)) {
+      setActiveTab(tab);
+    } else {
+      setActiveTab(roleConfig.home);
+    }
+  };
+
   const renderActivePage = () => {
-    switch (activeTab) {
+    // Gate activeTab against allowed set even if state was manually altered
+    const currentTab = roleConfig.allowed.includes(activeTab) ? activeTab : roleConfig.home;
+
+    switch (currentTab) {
       case 'landing':
-        return <LandingPage onNavigate={(tab) => setActiveTab(tab)} />;
+        return <LandingPage onNavigate={handleNavigate} />;
       case 'dashboard':
-        return <DashboardPage onNavigate={(tab) => setActiveTab(tab)} />;
+        return <DashboardPage onNavigate={handleNavigate} />;
       case 'map':
         return <FloodMapPage />;
       case 'rainfall':
@@ -38,36 +80,42 @@ const MainContent = () => {
       case 'predictions':
         return <PredictionsPage />;
       case 'simulation':
-        return <SimulationPage onNavigate={(tab) => setActiveTab(tab)} />;
+        return <SimulationPage onNavigate={handleNavigate} />;
       case 'alerts':
         return <AlertsPage />;
       case 'public-warning':
-        return <PublicWarningPage />;
+        return <PublicWarningPage onNavigate={handleNavigate} />;
       case 'historical':
         return <HistoricalPage />;
       case 'reports':
         return <ReportsPage />;
+      case 'field-inspections':
+        return <FieldInspectionsPage />;
+      case 'report-waterlogging':
+        return <ReportWaterloggingPage />;
       case 'login':
-        return <LoginPage onLoginSuccess={() => setActiveTab('dashboard')} />;
+        return <LoginPage onLoginSuccess={() => setActiveTab(roleConfig.home)} />;
       default:
-        return <DashboardPage onNavigate={(tab) => setActiveTab(tab)} />;
+        return <NotFoundPage activeTab={activeTab} onNavigate={handleNavigate} defaultTab={roleConfig.home} />;
     }
   };
 
   return (
     <div className="app-layout">
       <Header
-        onOpenAlerts={() => setActiveTab('alerts')}
-        onOpenLogin={() => setActiveTab('login')}
+        onOpenAlerts={() => handleNavigate('alerts')}
+        onOpenLogin={() => handleNavigate('login')}
       />
 
       <DemoBanner />
 
       <div className="main-body">
-        <Sidebar activeTab={activeTab} onTabChange={(tab) => setActiveTab(tab)} />
+        <Sidebar activeTab={activeTab} onTabChange={handleNavigate} />
 
         <main className="content-container">
-          {renderActivePage()}
+          <ErrorBoundary onReset={() => setActiveTab(roleConfig.home)}>
+            {renderActivePage()}
+          </ErrorBoundary>
         </main>
       </div>
 
@@ -84,9 +132,11 @@ const MainContent = () => {
 export default function App() {
   return (
     <AuthProvider>
-      <FloodProvider>
-        <MainContent />
-      </FloodProvider>
+      <LanguageProvider>
+        <FloodProvider>
+          <MainContent />
+        </FloodProvider>
+      </LanguageProvider>
     </AuthProvider>
   );
 }

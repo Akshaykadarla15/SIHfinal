@@ -19,7 +19,7 @@ const CITY_COORDINATES = {
   Chennai: [13.0200, 80.2000]
 };
 
-export const LeafletMap = ({ zones = [], height = '550px', showControls = true, onSelectZone }) => {
+export const LeafletMap = ({ zones = [], citizenReports = [], height = '550px', showControls = true, onSelectZone }) => {
   const mapContainerRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const layerGroupRef = useRef(null);
@@ -151,7 +151,7 @@ export const LeafletMap = ({ zones = [], height = '550px', showControls = true, 
         <div style="border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; margin-bottom: 8px;">
           <div style="display: flex; align-items: center; justify-content: space-between;">
             <strong style="font-size: 1.05rem; color: #0f172a;">${z.name}</strong>
-            <span class="badge-${z.risk_level.toLowerCase()}">${z.risk_level}</span>
+            <span class="badge-${z.risk_level.toLowerCase()}">${z.risk_level === 'Critical' ? '🛑 ' : z.risk_level === 'High' ? '⚠️ ' : z.risk_level === 'Moderate' ? '▲ ' : '✓ '}${z.risk_level}</span>
           </div>
           <div style="font-size: 0.75rem; color: #64748b;">${z.city} • Elev: ${z.elevation}m • Slope: ${z.slope || 1.8}%</div>
         </div>
@@ -223,7 +223,52 @@ export const LeafletMap = ({ zones = [], height = '550px', showControls = true, 
       }
     });
 
-  }, [zones, filterRisk, activeLayer]);
+    // Render Citizen Waterlogging Incident Pins
+    if (citizenReports && citizenReports.length > 0) {
+      citizenReports.forEach((rep) => {
+        if (!rep.latitude || !rep.longitude) return;
+        const citizenPinHtml = `
+          <div style="
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #16a34a;
+            border: 2.5px solid #ffffff;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-size: 14px;
+            cursor: pointer;
+          " title="Citizen Waterlogging Report: ${rep.location_name || rep.zone}">
+            📸
+          </div>
+        `;
+
+        const pinIcon = L.divIcon({
+          html: citizenPinHtml,
+          className: 'citizen-report-pin',
+          iconSize: [30, 30],
+          iconAnchor: [15, 15]
+        });
+
+        const pinMarker = L.marker([rep.latitude, rep.longitude], { icon: pinIcon });
+        pinMarker.bindPopup(`
+          <div style="font-family: inherit; padding: 4px; max-width: 220px;">
+            <div style="font-size: 0.68rem; color: #16a34a; font-weight: 800; text-transform: uppercase;">Citizen Report</div>
+            <strong style="font-size: 0.95rem; color: #0f172a;">${rep.location_name || rep.zone}</strong>
+            <div style="font-size: 0.78rem; color: #dc2626; font-weight: 700; margin: 4px 0;">Depth: ${rep.water_depth || rep.depth}</div>
+            <div style="font-size: 0.78rem; color: #334155;">${rep.description}</div>
+            ${rep.photo_url ? `<img src="${rep.photo_url}" style="width: 100%; border-radius: 4px; margin-top: 6px; max-height: 100px; object-fit: cover;" />` : ''}
+            <div style="font-size: 0.68rem; color: #94a3b8; margin-top: 4px;">Reporter: ${rep.reporter_name || 'Resident'}</div>
+          </div>
+        `);
+        layerGroupRef.current.addLayer(pinMarker);
+      });
+    }
+
+  }, [zones, citizenReports, filterRisk, activeLayer]);
 
   return (
     <div style={{ position: 'relative', width: '100%', height, borderRadius: '12px', overflow: 'hidden' }}>
@@ -312,19 +357,19 @@ export const LeafletMap = ({ zones = [], height = '550px', showControls = true, 
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#10b981', display: 'inline-block' }} />
-            <span>Safe (0–25%)</span>
+            <span>✓ Safe (0–25%)</span>
           </span>
           <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#eab308', display: 'inline-block' }} />
-            <span>Moderate (25–50%)</span>
+            <span>▲ Moderate (25–50%)</span>
           </span>
           <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#f97316', display: 'inline-block' }} />
-            <span>High (50–75%)</span>
+            <span>⚠️ High (50–75%)</span>
           </span>
           <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#ef4444', display: 'inline-block' }} />
-            <span>Critical (75–100%)</span>
+            <span>🛑 Critical (75–100%)</span>
           </span>
         </div>
       </div>

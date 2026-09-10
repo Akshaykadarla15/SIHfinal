@@ -117,3 +117,19 @@ class HistoricalFlood(Base):
     damage_reported = Column(Text, nullable=True)
 
     location = relationship("Location", back_populates="historical_floods")
+
+class CitizenReport(Base):
+    __tablename__ = "citizen_reports"
+
+    id = Column(Integer, primary_key=True, index=True)
+    city = Column(String(50), default="Hyderabad", index=True)
+    location_name = Column(String(100), nullable=False)
+    latitude = Column(Float, nullable=False)
+    longitude = Column(Float, nullable=False)
+    water_depth = Column(String(50), default="Knee-deep (1-2 ft)")
+    description = Column(Text, nullable=False)
+    photo_url = Column(Text, nullable=True)
+    reporter_name = Column(String(100), default="Concerned Citizen")
+    status = Column(String(30), default="pending")  # "pending", "verified", "cleared"
+    reported_at = Column(DateTime, default=datetime.datetime.utcnow)
+

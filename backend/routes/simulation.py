@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import get_db
 from models import Location, DrainageZone, RainfallRecord
@@ -10,6 +10,16 @@ router = APIRouter(prefix="/api/simulation", tags=["Flood Simulation"])
 
 @router.post("/run", response_model=SimulationResult)
 def run_simulation(sim_input: SimulationInput, db: Session = Depends(get_db)):
+    # Defensive input validation
+    if not (0.0 <= sim_input.rainfall_intensity <= 300.0):
+        raise HTTPException(status_code=422, detail="Rainfall intensity must be between 0 and 300 mm/hr.")
+    if not (0.0 <= sim_input.forecast_rainfall <= 300.0):
+        raise HTTPException(status_code=422, detail="Forecast rainfall must be between 0 and 300 mm/hr.")
+    if sim_input.drainage_capacity <= 0 or sim_input.drainage_capacity > 300.0:
+        raise HTTPException(status_code=422, detail="Drainage capacity must be between 5 and 300 mm/hr.")
+    if not (0.0 <= sim_input.drainage_blockage <= 100.0):
+        raise HTTPException(status_code=422, detail="Drainage blockage must be between 0 and 100%.")
+
     city = sim_input.target_city or "Hyderabad"
     locs = db.query(Location).filter(Location.city == city).all()
 

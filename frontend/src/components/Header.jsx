@@ -160,7 +160,31 @@ export const Header = ({ onOpenAlerts, onOpenLogin }) => {
       </div>
 
       {/* Right Controls: Notifications & Role Switcher */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+        {/* Persistent "Viewing as" Role Chip */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px',
+          padding: '4px 10px',
+          borderRadius: '999px',
+          fontSize: '0.74rem',
+          fontWeight: 700,
+          background: currentUser?.role === 'admin' ? '#e0f2fe' : (currentUser?.role === 'officer' ? '#ccfbf1' : '#dcfce7'),
+          border: `1px solid ${currentUser?.role === 'admin' ? '#bae6fd' : (currentUser?.role === 'officer' ? '#99f6e4' : '#bbf7d0')}`,
+          color: currentUser?.role === 'admin' ? '#0369a1' : (currentUser?.role === 'officer' ? '#0f766e' : '#15803d')
+        }}>
+          <span style={{
+            width: '8px',
+            height: '8px',
+            borderRadius: '50%',
+            background: currentUser?.role === 'admin' ? '#0284c7' : (currentUser?.role === 'officer' ? '#0d9488' : '#16a34a')
+          }} />
+          <span>
+            Viewing as: <strong>{currentUser?.role === 'admin' ? 'Admin Authority' : (currentUser?.role === 'officer' ? 'Field Officer' : 'Public Citizen')}</strong>
+          </span>
+        </div>
+
         {/* Alerts Bell */}
         <button
           onClick={onOpenAlerts}
@@ -209,7 +233,7 @@ export const Header = ({ onOpenAlerts, onOpenLogin }) => {
               alignItems: 'center',
               gap: '10px',
               background: '#f1f5f9',
-              border: '1px solid #cbd5e1',
+              border: `1px solid ${currentUser?.role === 'admin' ? '#bae6fd' : (currentUser?.role === 'officer' ? '#99f6e4' : '#bbf7d0')}`,
               padding: '5px 12px',
               borderRadius: '8px',
               cursor: 'pointer',
@@ -220,7 +244,7 @@ export const Header = ({ onOpenAlerts, onOpenLogin }) => {
               width: '28px',
               height: '28px',
               borderRadius: '50%',
-              background: currentUser?.role === 'admin' ? '#0284c7' : (currentUser?.role === 'officer' ? '#f59e0b' : '#10b981'),
+              background: currentUser?.role === 'admin' ? '#0284c7' : (currentUser?.role === 'officer' ? '#0d9488' : '#16a34a'),
               color: '#fff',
               display: 'flex',
               alignItems: 'center',
@@ -235,7 +259,7 @@ export const Header = ({ onOpenAlerts, onOpenLogin }) => {
                 {currentUser?.name || 'Demo User'}
               </div>
               <div style={{ fontSize: '0.7rem', color: '#64748b', textTransform: 'capitalize', fontWeight: 600 }}>
-                {currentUser?.role === 'admin' ? 'Authority (Admin)' : (currentUser?.role === 'officer' ? 'Field Officer' : 'Public Citizen')}
+                {currentUser?.badge || (currentUser?.role === 'admin' ? 'Authority (Admin)' : (currentUser?.role === 'officer' ? 'Field Officer' : 'Public Citizen'))}
               </div>
             </div>
             <ChevronDown size={14} color="#64748b" />
@@ -251,40 +275,46 @@ export const Header = ({ onOpenAlerts, onOpenLogin }) => {
               border: '1px solid #cbd5e1',
               borderRadius: '10px',
               boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-              width: '240px',
+              width: '250px',
               padding: '8px',
               zIndex: 200
             }}>
               <div style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 700, padding: '4px 8px', textTransform: 'uppercase' }}>
                 Switch Demo Role:
               </div>
-              {Object.entries(DEMO_ACCOUNTS).map(([key, acc]) => (
-                <button
-                  key={key}
-                  onClick={() => {
-                    switchRole(key);
-                    setIsRoleMenuOpen(false);
-                  }}
-                  style={{
-                    width: '100%',
-                    padding: '8px 10px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    background: currentUser?.role === key ? '#e0f2fe' : 'transparent',
-                    border: 'none',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    textAlign: 'left'
-                  }}
-                >
-                  <div>
-                    <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#0f172a' }}>{acc.name}</div>
-                    <div style={{ fontSize: '0.7rem', color: '#64748b' }}>{acc.badge}</div>
-                  </div>
-                  {currentUser?.role === key && <UserCheck size={16} color="#0284c7" />}
-                </button>
-              ))}
+              {Object.entries(DEMO_ACCOUNTS).map(([key, acc]) => {
+                const isSelected = currentUser?.role === key;
+                const roleColor = key === 'admin' ? '#0284c7' : (key === 'officer' ? '#0d9488' : '#16a34a');
+                const roleBg = key === 'admin' ? '#e0f2fe' : (key === 'officer' ? '#ccfbf1' : '#dcfce7');
+
+                return (
+                  <button
+                    key={key}
+                    onClick={() => {
+                      switchRole(key);
+                      setIsRoleMenuOpen(false);
+                    }}
+                    style={{
+                      width: '100%',
+                      padding: '8px 10px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      background: isSelected ? roleBg : 'transparent',
+                      border: 'none',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      textAlign: 'left'
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontSize: '0.82rem', fontWeight: 700, color: isSelected ? roleColor : '#0f172a' }}>{acc.name}</div>
+                      <div style={{ fontSize: '0.7rem', color: '#64748b' }}>{acc.badge}</div>
+                    </div>
+                    {isSelected && <UserCheck size={16} color={roleColor} />}
+                  </button>
+                );
+              })}
             </div>
           )}
         </div>

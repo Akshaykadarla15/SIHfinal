@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useFlood } from '../context/FloodContext';
+import { useAuth } from '../context/AuthContext';
 import { apiService } from '../services/api';
 import { FileText, Download, Printer, Shield, CheckCircle, AlertTriangle } from 'lucide-react';
 
 export const ReportsPage = () => {
   const { city } = useFlood();
+  const { currentUser } = useAuth();
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
   const [reportType, setReportType] = useState('daily');
@@ -37,6 +39,7 @@ export const ReportsPage = () => {
   }
 
   const { executive_summary, high_risk_zones, all_zones, recommendations } = report;
+  const isPublic = currentUser?.role === 'public';
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
@@ -44,10 +47,12 @@ export const ReportsPage = () => {
       <div className="gov-card" style={{ padding: '16px 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
         <div>
           <h2 style={{ fontSize: '1.25rem', color: '#0f172a', margin: 0 }}>
-            Official Municipal Disaster Management Bulletins
+            {isPublic ? 'Citizen Safety Flood Bulletin' : 'Official Municipal Disaster Management Bulletins'}
           </h2>
           <div style={{ fontSize: '0.78rem', color: '#64748b' }}>
-            Automated daily and operational situation reports ready for administration dissemination
+            {isPublic
+              ? 'Official advisory summary and emergency guidelines issued for citizens in ' + city
+              : 'Automated daily and operational situation reports ready for administration dissemination'}
           </div>
         </div>
 
@@ -58,17 +63,19 @@ export const ReportsPage = () => {
             style={{ fontSize: '0.82rem' }}
           >
             <Printer size={15} />
-            <span>Print Report</span>
+            <span>Print Bulletin</span>
           </button>
 
-          <button
-            onClick={handleDownloadCsv}
-            className="btn-primary"
-            style={{ fontSize: '0.82rem' }}
-          >
-            <Download size={15} />
-            <span>Download CSV Report</span>
-          </button>
+          {!isPublic && (
+            <button
+              onClick={handleDownloadCsv}
+              className="btn-primary"
+              style={{ fontSize: '0.82rem' }}
+            >
+              <Download size={15} />
+              <span>Download CSV Report</span>
+            </button>
+          )}
         </div>
       </div>
 

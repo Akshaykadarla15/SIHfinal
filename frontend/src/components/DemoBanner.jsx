@@ -17,7 +17,7 @@ export const DemoBanner = () => {
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
         <span style={{
-          background: isSimulatingRainfall ? '#ef4444' : '#0284c7',
+          background: isSimulatingRainfall ? '#ef4444' : (city === 'Hyderabad' ? '#059669' : '#0284c7'),
           color: '#ffffff',
           fontWeight: 800,
           fontSize: '0.68rem',
@@ -25,13 +25,15 @@ export const DemoBanner = () => {
           borderRadius: '4px',
           letterSpacing: '0.04em'
         }}>
-          DEMO MODE
+          {isSimulatingRainfall ? 'SIMULATION ACTIVE' : (city === 'Hyderabad' ? 'LIVE TELEMETRY' : 'DEMO MODE')}
         </span>
 
         <span style={{ color: isSimulatingRainfall ? '#991b1b' : '#0369a1', fontWeight: 600 }}>
           {isSimulatingRainfall
             ? `Active Scenario: Extreme 105 mm/hr Cloudburst simulated across ${city}. AI nowcasting recalculated risks.`
-            : `SIH Prototype: Using realistic hydrological dynamics for ${city}. Test instant nowcasting triggers below.`}
+            : (city === 'Hyderabad'
+                ? 'Hyderabad: Live weather data (Open-Meteo API) · Mumbai / Delhi / Chennai: Calibrated synthetic demo data'
+                : `${city}: Calibrated synthetic demo data · Hyderabad: Live weather data (Open-Meteo API)`)}
         </span>
       </div>
 
