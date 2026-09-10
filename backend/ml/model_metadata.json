@@ -1,0 +1,37 @@
+{
+  "model_type": "RandomForestClassifier",
+  "algorithm": "scikit-learn Random Forest (120 Estimators)",
+  "features": [
+    "rainfall_intensity",
+    "forecast_rainfall",
+    "cumulative_rainfall",
+    "drainage_capacity",
+    "drainage_utilization",
+    "drainage_blockage",
+    "elevation",
+    "slope",
+    "impervious_surface",
+    "historical_flood_frequency",
+    "water_accumulation"
+  ],
+  "feature_importances": {
+    "rainfall_intensity": 30.81,
+    "forecast_rainfall": 18.6,
+    "cumulative_rainfall": 7.13,
+    "drainage_capacity": 1.64,
+    "drainage_utilization": 22.82,
+    "drainage_blockage": 0.87,
+    "elevation": 1.49,
+    "slope": 0.76,
+    "impervious_surface": 1.07,
+    "historical_flood_frequency": 0.95,
+    "water_accumulation": 13.86
+  },
+  "metrics": {
+    "accuracy": 98.47,
+    "roc_auc": 0.9986,
+    "test_samples": 1500
+  },
+  "dataset_type": "Simulated Hydrology Dynamics (SIH Prototype Verification)",
+  "trained_at": "2026-09-10"
+}
