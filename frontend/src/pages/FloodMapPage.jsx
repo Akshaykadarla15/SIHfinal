@@ -38,7 +38,7 @@ export const FloodMapPage = () => {
 
   useEffect(() => {
     // Fetch live citizen waterlogging reports from backend
-    axios.get(`http://127.0.0.1:8000/api/reports/waterlogging?city=${encodeURIComponent(city)}`)
+    axios.get(`${import.meta.env.VITE_API_URL}/reports/waterlogging?city=${encodeURIComponent(city)}`)
       .then(res => {
         if (res.data && res.data.length > 0) {
           setCitizenReports(res.data);

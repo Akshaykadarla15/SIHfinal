@@ -90,7 +90,7 @@ export const ReportWaterloggingPage = () => {
 
     try {
       // Post to backend route
-      await axios.post('http://127.0.0.1:8000/api/reports/waterlogging', reportPayload).catch(err => {
+      await axios.post('${import.meta.env.VITE_API_URL}/reports/waterlogging', reportPayload).catch(err => {
         console.warn('Backend waterlogging route offline or pending migration, saving in local state:', err);
       });
 

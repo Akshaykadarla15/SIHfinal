@@ -77,7 +77,7 @@ export const PredictionsPage = () => {
 
   useEffect(() => {
     // Fetch global model feature importances from backend
-    fetch('http://127.0.0.1:8000/api/predictions/feature-importances')
+    fetch('`${import.meta.env.VITE_API_URL}/predictions/feature-importances`')
       .then(res => res.json())
       .then(data => {
         if (data && typeof data === 'object') {

@@ -27,7 +27,7 @@ export const ReportsPage = () => {
   }, [city, reportType]);
 
   const handleDownloadCsv = () => {
-    window.open(`http://127.0.0.1:8000/api/reports/download-csv?city=${encodeURIComponent(city)}`, '_blank');
+    window.open(`${import.meta.env.VITE_API_URL}/reports/download-csv?city=${encodeURIComponent(city)}`, '_blank');
   };
 
   const handlePrint = () => {
