@@ -25,7 +25,7 @@ export const LeafletMap = ({ zones = [], citizenReports = [], height = '550px', 
   const layerGroupRef = useRef(null);
   const drainageLayerRef = useRef(null);
 
-  const { city, setSelectedZone, setExplainZone } = useFlood();
+  const { city, activeLocation, selectDynamicLocation, setSelectedZone, setExplainZone } = useFlood();
 
   const [activeLayer, setActiveLayer] = useState('all'); // 'all', 'risk', 'drainage'
   const [filterRisk, setFilterRisk] = useState('all'); // 'all', 'Critical', 'High', 'Moderate', 'Safe'
@@ -35,7 +35,10 @@ export const LeafletMap = ({ zones = [], citizenReports = [], height = '550px', 
     if (!mapContainerRef.current) return;
 
     if (!mapInstanceRef.current) {
-      const center = CITY_COORDINATES[city] || [17.4200, 78.4350];
+      const center = (activeLocation?.lat && activeLocation?.lng) 
+        ? [activeLocation.lat, activeLocation.lng] 
+        : (CITY_COORDINATES[city] || [17.4200, 78.4350]);
+
       const map = L.map(mapContainerRef.current, {
         center,
         zoom: 12,
@@ -55,6 +58,20 @@ export const LeafletMap = ({ zones = [], citizenReports = [], height = '550px', 
 
       layerGroupRef.current = L.layerGroup().addTo(map);
       drainageLayerRef.current = L.layerGroup().addTo(map);
+
+      // Click anywhere to predict flood risk for that exact coordinate
+      map.on('click', (e) => {
+        const { lat, lng } = e.latlng;
+        if (selectDynamicLocation) {
+          selectDynamicLocation({
+            name: `Location (${lat.toFixed(3)}°, ${lng.toFixed(3)}°)`,
+            lat: lat,
+            lng: lng,
+            isDynamic: true
+          });
+        }
+      });
+
       mapInstanceRef.current = map;
     }
 
@@ -66,12 +83,15 @@ export const LeafletMap = ({ zones = [], citizenReports = [], height = '550px', 
     };
   }, []);
 
-  // Update Center when City changes
+  // Update Center when City or activeLocation changes
   useEffect(() => {
-    if (mapInstanceRef.current && CITY_COORDINATES[city]) {
-      mapInstanceRef.current.setView(CITY_COORDINATES[city], 12);
+    if (!mapInstanceRef.current) return;
+    if (activeLocation?.lat && activeLocation?.lng) {
+      mapInstanceRef.current.flyTo([activeLocation.lat, activeLocation.lng], 13, { duration: 1.2 });
+    } else if (CITY_COORDINATES[city]) {
+      mapInstanceRef.current.flyTo(CITY_COORDINATES[city], 12, { duration: 1.0 });
     }
-  }, [city]);
+  }, [city, activeLocation]);
 
   // Render Overlays & Risk Markers
   useEffect(() => {

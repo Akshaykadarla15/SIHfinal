@@ -40,7 +40,7 @@ export const LandingPage = ({ onNavigate }) => {
           border: '1px solid #bae6fd'
         }}>
           <ShieldCheck size={16} />
-          <span>Smart India Hackathon 2024 • Disaster Management Prototype</span>
+          <span>National Disaster Management • Urban Inundation Early Warning</span>
         </div>
 
         <h1 style={{
@@ -255,7 +255,7 @@ export const LandingPage = ({ onNavigate }) => {
         </div>
       </section>
 
-      {/* SIH Hackathon Demo Guide */}
+      {/* Operational Platform Demonstration Guide */}
       <section style={{ padding: '45px 24px', maxWidth: '1000px', margin: '0 auto' }}>
         <div style={{
           background: '#ffffff',
@@ -266,7 +266,7 @@ export const LandingPage = ({ onNavigate }) => {
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
             <AlertTriangle size={20} color="#ea580c" />
-            <h3 style={{ margin: 0, fontSize: '1.15rem' }}>SIH 10-Step Presentation Flow</h3>
+            <h3 style={{ margin: 0, fontSize: '1.15rem' }}>Operational 10-Step Demonstration Flow</h3>
           </div>
           <div style={{ fontSize: '0.85rem', color: '#475569', lineHeight: 1.7 }}>
             1. View City-wide Risk Map → 2. Observe Rainfall increasing → 3. Click high-risk area (Kukatpally / Begumpet) to inspect 82% flood probability & 30-45 min expected window → 4. Open Explainable AI to show factor attribution → 5. Open Scenario Simulator, set Rainfall = 100 mm/hr, Blockage = 35% → 6. Click "RUN SIMULATION" to watch instant recalculation into Critical Risk → 7. Review generated emergency alerts and municipal action recommendations!

@@ -16,20 +16,21 @@ from routes import (
     simulation,
     alerts,
     historical,
-    reports
+    reports,
+    dynamic_routes
 )
 
 # Initialize FastAPI application
 app = FastAPI(
-    title="Urban Flood Nowcasting System API",
-    description="AI-powered early warning & hydrological risk nowcasting platform for Smart India Hackathon (SIH)",
+    title="Urban Flood Early Warning & Nowcasting Platform",
+    description="National AI-powered early warning & hydrological risk nowcasting platform",
     version="1.0.0"
 )
 
 # Configure CORS for local development and production frontends
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # For prototype versatility
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -54,6 +55,7 @@ app.include_router(simulation.router)
 app.include_router(alerts.router)
 app.include_router(historical.router)
 app.include_router(reports.router)
+app.include_router(dynamic_routes.router)
 
 @app.get("/")
 def root():
@@ -61,7 +63,7 @@ def root():
         "system": "Urban Flood Nowcasting System",
         "status": "Operational",
         "version": "1.0.0",
-        "mode": "SIH Prototype / Demo Active",
+        "mode": "Operational Hydrology Telemetry Active",
         "docs_url": "/docs"
     }
 

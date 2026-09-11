@@ -80,7 +80,7 @@ export const SimulationPage = ({ onNavigate }) => {
                   borderRadius: '999px',
                   textTransform: 'uppercase'
                 }}>
-                  SIH Presentation Highlight
+                  Scenario Simulation Highlight
                 </span>
               </div>
               <div style={{ fontSize: '0.78rem', color: '#64748b' }}>

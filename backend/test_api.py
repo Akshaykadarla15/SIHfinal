@@ -3,12 +3,12 @@ import json
 
 BASE = 'http://127.0.0.1:8000'
 
-def test_get(path):
+def run_get(path):
     with urllib.request.urlopen(BASE + path) as res:
         data = json.loads(res.read().decode())
         print(f"[GET {path}] Status 200 OK - Keys: {list(data.keys())[:4]}")
 
-def test_post(path, payload):
+def run_post(path, payload):
     req = urllib.request.Request(
         BASE + path,
         data=json.dumps(payload).encode(),
@@ -20,16 +20,16 @@ def test_post(path, payload):
 
 if __name__ == "__main__":
     print("Testing Backend Endpoints...")
-    test_get('/health')
-    test_get('/api/dashboard?city=Hyderabad')
-    test_get('/api/risk-zones?city=Hyderabad')
-    test_get('/api/rainfall?city=Hyderabad')
-    test_get('/api/drainage?city=Hyderabad')
-    test_get('/api/alerts?city=Hyderabad')
-    test_get('/api/historical-data?city=Hyderabad')
-    test_get('/api/reports/summary?city=Hyderabad')
+    run_get('/health')
+    run_get('/api/dashboard?city=Hyderabad')
+    run_get('/api/risk-zones?city=Hyderabad')
+    run_get('/api/rainfall?city=Hyderabad')
+    run_get('/api/drainage?city=Hyderabad')
+    run_get('/api/alerts?city=Hyderabad')
+    run_get('/api/historical-data?city=Hyderabad')
+    run_get('/api/reports/summary?city=Hyderabad')
 
-    pred_data = test_post('/api/predictions/predict', {
+    pred_data = run_post('/api/predictions/predict', {
         'rainfall_intensity': 55,
         'forecast_rainfall': 70,
         'drainage_capacity': 80,

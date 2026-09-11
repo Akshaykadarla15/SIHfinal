@@ -426,14 +426,159 @@ export const apiService = {
         city,
         total_records: 3,
         chart_data: [
-          { event: "Kukatpally (2020-10)", rainfall: 192.5, water_level: 1.85, duration: 14.0 },
-          { event: "Begumpet (2022-07)", rainfall: 114.0, water_level: 0.95, duration: 6.5 },
-          { event: "Tolichowki (2023-08)", rainfall: 88.0, water_level: 0.55, duration: 3.5 }
+          { event: "Kukatpally (2020-10)", rainfall: 192.5, drainage_capacity: 70.0, drainage_load: 134.5, water_level: 1.85, utilization: 192.1, duration: 14.0 },
+          { event: "Begumpet (2022-07)", rainfall: 114.0, drainage_capacity: 65.0, drainage_load: 98.2, water_level: 0.95, utilization: 151.1, duration: 6.5 },
+          { event: "Tolichowki (2023-08)", rainfall: 88.0, drainage_capacity: 60.0, drainage_load: 78.4, water_level: 0.55, utilization: 130.7, duration: 3.5 }
         ],
         events: [
-          { id: 1, location_name: "Kukatpally", event_date: "2020-10-14", rainfall_mm: 192.5, peak_water_level: 1.85, flood_duration_hours: 14.0, severity: "Severe", drainage_performance: "Surcharged & Backflowing", damage_reported: "Waterlogging in cellars, traffic paralysis for 8 hours" },
-          { id: 2, location_name: "Begumpet", event_date: "2022-07-23", rainfall_mm: 114.0, peak_water_level: 0.95, flood_duration_hours: 6.5, severity: "High", drainage_performance: "Overflow at storm culverts", damage_reported: "Inundation of low-lying commercial shops" },
-          { id: 3, location_name: "Tolichowki", event_date: "2023-08-19", rainfall_mm: 88.0, peak_water_level: 0.55, flood_duration_hours: 3.5, severity: "Moderate", drainage_performance: "Slow discharge due to trash debris", damage_reported: "Local traffic slow down, cleared within 3 hours" }
+          {
+            id: 1,
+            location_name: "Kukatpally",
+            event_date: "2020-10-14",
+            rainfall_mm: 192.5,
+            peak_water_level: 1.85,
+            flood_duration_hours: 14.0,
+            severity: "Severe",
+            drain_id: "DR-HYD-102",
+            drainage_capacity: 70.0,
+            peak_drainage_load: 134.5,
+            utilization_percentage: 192.1,
+            blockage_percentage: 48.0,
+            surcharge_status: "Critical Backflow",
+            drainage_performance: "Severe hydraulic surcharge; nala overflowed embankments into residential lowlands",
+            remedial_action: "Constructed twin box drain (3.5m x 2.5m) and cleared 180 MT silt deposits under SNDP Phase 1",
+            damage_reported: "Waterlogging in cellars, traffic paralysis for 8 hours"
+          },
+          {
+            id: 2,
+            location_name: "Begumpet",
+            event_date: "2022-07-23",
+            rainfall_mm: 114.0,
+            peak_water_level: 0.95,
+            flood_duration_hours: 6.5,
+            severity: "High",
+            drain_id: "DR-HYD-112",
+            drainage_capacity: 65.0,
+            peak_drainage_load: 98.2,
+            utilization_percentage: 151.1,
+            blockage_percentage: 38.0,
+            surcharge_status: "Culvert Surcharged",
+            drainage_performance: "Storm culvert inlets overwhelmed by upstream runoff; roadway grating choked by debris",
+            remedial_action: "Replaced narrow circular conduit with RCC box culvert; installed mechanical trash barrier",
+            damage_reported: "Inundation of low-lying commercial establishments and service lanes"
+          },
+          {
+            id: 3,
+            location_name: "Tolichowki",
+            event_date: "2023-08-19",
+            rainfall_mm: 88.0,
+            peak_water_level: 0.55,
+            flood_duration_hours: 3.5,
+            severity: "Moderate",
+            drain_id: "DR-HYD-107",
+            drainage_capacity: 60.0,
+            peak_drainage_load: 78.4,
+            utilization_percentage: 130.7,
+            blockage_percentage: 42.0,
+            surcharge_status: "Moderate Surcharge",
+            drainage_performance: "Outfall constriction at Shah Hatim Talab; slow gravity discharge caused localized pool",
+            remedial_action: "Installed 2x 25 HP high-discharge dewatering pumps and widened secondary feeder channel",
+            damage_reported: "Local street inundation up to 1.5 ft; vehicular movement halted temporarily"
+          }
+        ]
+      };
+    }
+  },
+
+  getHistoricalDrainageData: async (city = 'Hyderabad', filters = {}) => {
+    try {
+      const params = new URLSearchParams({ city, ...filters });
+      const res = await client.get(`/historical-data/drainage?${params.toString()}`);
+      return res.data;
+    } catch (e) {
+      return {
+        city,
+        total_drainage_events: 4,
+        summary: {
+          max_surcharge_recorded: 192.1,
+          avg_clearance_hours: 6.4,
+          avg_debris_blockage: 35.8,
+          monitored_culverts_count: 6,
+          remediation_projects_completed: 6
+        },
+        records: [
+          {
+            drain_id: "DR-HYD-102",
+            location_name: "Kukatpally",
+            catchment_basin: "Yellamma Cheruvu Basin",
+            event_name: "Oct 2020 Greater Hyderabad Deluge",
+            event_date: "2020-10-14",
+            rainfall_mm: 192.5,
+            drainage_capacity: 70.0,
+            peak_drainage_load: 134.5,
+            utilization_percentage: 192.1,
+            blockage_percentage: 48.0,
+            peak_water_level: 1.85,
+            flood_duration_hours: 14.0,
+            surcharge_status: "Critical Backflow",
+            drainage_performance: "Severe hydraulic surcharge; nala overflowed embankments into residential lowlands",
+            remedial_action: "Constructed twin box drain (3.5m x 2.5m) and cleared 180 MT silt deposits under SNDP Phase 1",
+            damage_reported: "Waterlogging in cellars, traffic paralysis for 8 hours"
+          },
+          {
+            drain_id: "DR-HYD-112",
+            location_name: "Begumpet",
+            catchment_basin: "Balanagar-Hussain Sagar Trunk",
+            event_name: "July 2022 Balanagar-Begumpet Inflow",
+            event_date: "2022-07-23",
+            rainfall_mm: 114.0,
+            drainage_capacity: 65.0,
+            peak_drainage_load: 98.2,
+            utilization_percentage: 151.1,
+            blockage_percentage: 38.0,
+            peak_water_level: 0.95,
+            flood_duration_hours: 6.5,
+            surcharge_status: "Culvert Surcharged",
+            drainage_performance: "Storm culvert inlets overwhelmed by upstream runoff; roadway grating choked by debris",
+            remedial_action: "Replaced narrow circular conduit with RCC box culvert; installed mechanical trash barrier",
+            damage_reported: "Inundation of low-lying commercial establishments and service lanes"
+          },
+          {
+            drain_id: "DR-HYD-107",
+            location_name: "Tolichowki",
+            catchment_basin: "Shah Hatim Talab Outfall",
+            event_name: "Aug 2023 Nadeem Colony Flash Storm",
+            event_date: "2023-08-19",
+            rainfall_mm: 88.0,
+            drainage_capacity: 60.0,
+            peak_drainage_load: 78.4,
+            utilization_percentage: 130.7,
+            blockage_percentage: 42.0,
+            peak_water_level: 0.55,
+            flood_duration_hours: 3.5,
+            surcharge_status: "Moderate Surcharge",
+            drainage_performance: "Outfall constriction at Shah Hatim Talab; slow gravity discharge caused localized pool",
+            remedial_action: "Installed 2x 25 HP high-discharge dewatering pumps and widened secondary feeder channel",
+            damage_reported: "Local street inundation up to 1.5 ft; vehicular movement halted temporarily"
+          },
+          {
+            drain_id: "DR-HYD-105",
+            location_name: "Madhapur",
+            catchment_basin: "Durgam Cheruvu Overflow Nala",
+            event_name: "Sept 2021 Durgam Cheruvu Inflow Surge",
+            event_date: "2021-09-27",
+            rainfall_mm: 105.0,
+            drainage_capacity: 75.0,
+            peak_drainage_load: 92.0,
+            utilization_percentage: 122.7,
+            blockage_percentage: 20.0,
+            peak_water_level: 0.70,
+            flood_duration_hours: 4.0,
+            surcharge_status: "Culvert Surcharged",
+            drainage_performance: "Inorbit feeder canal reached bankfull capacity; water spillage onto junction carriageway",
+            remedial_action: "Raised retaining walls by 0.9m along IT corridor storm trunk line",
+            damage_reported: "Traffic tailbacks on Hitec City main arterial road"
+          }
         ]
       };
     }
@@ -564,5 +709,50 @@ export const apiService = {
     } catch (e) {
       return null;
     }
+  },
+
+  // Dynamic Geolocation & Live Weather Endpoints
+  searchLocations: async (query) => {
+    try {
+      const res = await client.get(`/dynamic/search?q=${encodeURIComponent(query)}`);
+      return res.data;
+    } catch (e) {
+      console.warn('Search fallback to Open-Meteo direct API:', e);
+      try {
+        const directRes = await axios.get(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=6&language=en&format=json`);
+        return directRes.data?.results?.map(r => ({
+          id: r.id,
+          name: r.name,
+          admin1: r.admin1 || '',
+          country: r.country || '',
+          latitude: r.latitude,
+          longitude: r.longitude,
+          elevation: r.elevation || 20.0
+        })) || [];
+      } catch (err) {
+        return [];
+      }
+    }
+  },
+
+  getDynamicWeather: async (lat, lng) => {
+    try {
+      const res = await client.get(`/dynamic/weather?lat=${lat}&lng=${lng}`);
+      return res.data;
+    } catch (e) {
+      console.warn('Weather fallback:', e);
+      return null;
+    }
+  },
+
+  getDynamicFloodPrediction: async (lat, lng, name = 'Current Location') => {
+    try {
+      const res = await client.get(`/dynamic/predict?lat=${lat}&lng=${lng}&name=${encodeURIComponent(name)}`);
+      return res.data;
+    } catch (e) {
+      console.warn('Dynamic predict fallback calculation:', e);
+      return null;
+    }
   }
 };
+

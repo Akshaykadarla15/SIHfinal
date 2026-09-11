@@ -136,7 +136,7 @@ export const LoginPage = ({ onLoginSuccess }) => {
       {/* Quick Demo Accounts Helper */}
       <div style={{ marginTop: '26px', paddingTop: '20px', borderTop: '1px solid #e2e8f0' }}>
         <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', marginBottom: '10px', textAlign: 'center' }}>
-          One-Click Demo Accounts (SIH Evaluators)
+          One-Click Demo Accounts (Operational Demonstration Roles)
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>

@@ -81,7 +81,7 @@ export const AdminDashboardPage = ({ onNavigate }) => {
         </div>
       )}
 
-      {/* Scenario Simulator Shortcut Bar (SIH Jury Presentation Feature) */}
+      {/* Scenario Simulator Shortcut Bar (Live Simulation Feature) */}
       <div style={{
         background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
         borderRadius: '12px',

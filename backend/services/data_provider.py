@@ -21,7 +21,7 @@ class DataProvider(abc.ABC):
 
 class DemoDataProvider(DataProvider):
     """
-    SIH Prototype Demo Data Provider.
+    Standard Municipal & Telemetry Data Provider.
     Configured with realistic topography, drainage IDs, and flood susceptibility
     for Indian metropolitan cities (Hyderabad default, Mumbai, Delhi, Chennai).
     """

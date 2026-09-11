@@ -28,7 +28,7 @@ export const DEMO_ACCOUNTS = {
 };
 
 export const AuthProvider = ({ children }) => {
-  // Start with Admin role for full SIH presentation demonstration
+  // Start with Admin role for full administrative demonstration
   const [currentUser, setCurrentUser] = useState(() => {
     const saved = localStorage.getItem('flood_user');
     return saved ? JSON.parse(saved) : DEMO_ACCOUNTS.admin;

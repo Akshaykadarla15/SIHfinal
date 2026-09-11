@@ -5,6 +5,12 @@ const FloodContext = createContext();
 
 export const FloodProvider = ({ children }) => {
   const [city, setCity] = useState('Hyderabad');
+  const [activeLocation, setActiveLocation] = useState({
+    name: 'Hyderabad',
+    lat: 17.3850,
+    lng: 78.4867,
+    isDynamic: false
+  });
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isSimulatingRainfall, setIsSimulatingRainfall] = useState(false);
@@ -28,10 +34,35 @@ export const FloodProvider = ({ children }) => {
     }
   }, []);
 
+  const selectDynamicLocation = useCallback(async (loc) => {
+    setActiveLocation(loc);
+    setCity(loc.name);
+    setLoading(true);
+    try {
+      const pred = await apiService.getDynamicFloodPrediction(loc.lat, loc.lng, loc.name);
+      if (pred && pred.dashboard) {
+        setDashboardData(pred.dashboard);
+        if (pred.zone) {
+          setSelectedZone(pred.zone);
+        }
+        setNotificationCount(pred.dashboard.active_alerts ? pred.dashboard.active_alerts.length : 1);
+      } else {
+        await fetchCityData(loc.name);
+      }
+    } catch (err) {
+      console.error('Error fetching dynamic flood prediction:', err);
+      await fetchCityData(loc.name);
+    } finally {
+      setLoading(false);
+    }
+  }, [fetchCityData]);
+
   useEffect(() => {
-    fetchCityData(city);
+    if (!activeLocation.isDynamic) {
+      fetchCityData(city);
+    }
     setIsSimulatingRainfall(false);
-  }, [city, fetchCityData]);
+  }, [city, activeLocation.isDynamic, fetchCityData]);
 
   // Demonstration feature: Instant Heavy Rainfall trigger
   const triggerHeavyRainfall = async () => {
@@ -128,6 +159,9 @@ export const FloodProvider = ({ children }) => {
     <FloodContext.Provider value={{
       city,
       setCity,
+      activeLocation,
+      setActiveLocation,
+      selectDynamicLocation,
       dashboardData,
       loading,
       isSimulatingRainfall,

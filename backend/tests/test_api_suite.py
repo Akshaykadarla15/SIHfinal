@@ -186,3 +186,63 @@ def test_historical_accuracy_metrics():
     assert data["confusion_matrix"]["true_positive"] > 0
     assert "lead_time_distribution" in data
     assert "recent_storm_evaluations" in data
+
+def test_historical_flood_data():
+    res = client.get("/api/historical-data?city=Hyderabad")
+    assert res.status_code == 200
+    data = res.json()
+    assert "events" in data
+    assert "chart_data" in data
+    assert len(data["events"]) > 0
+    # Check that events include drainage telemetry
+    first_ev = data["events"][0]
+    assert "drain_id" in first_ev
+    assert "drainage_capacity" in first_ev
+    assert "utilization_percentage" in first_ev
+    assert "surcharge_status" in first_ev
+
+def test_historical_drainage_data():
+    res = client.get("/api/historical-data/drainage?city=Hyderabad")
+    assert res.status_code == 200
+    data = res.json()
+    assert "records" in data
+    assert "summary" in data
+    assert len(data["records"]) > 0
+    first_rec = data["records"][0]
+    assert "drain_id" in first_rec
+    assert "catchment_basin" in first_rec
+    assert "drainage_capacity" in first_rec
+    assert "utilization_percentage" in first_rec
+    assert "remedial_action" in first_rec
+
+
+# 9. Dynamic Live Weather & Hyperlocal Flood Predictions
+def test_dynamic_search_endpoint():
+    res = client.get("/api/dynamic/search?q=Hyderabad")
+    assert res.status_code == 200
+    results = res.json()
+    assert isinstance(results, list)
+    if len(results) > 0:
+        assert "name" in results[0]
+        assert "latitude" in results[0]
+        assert "longitude" in results[0]
+
+def test_dynamic_weather_endpoint():
+    res = client.get("/api/dynamic/weather?lat=17.3850&lng=78.4867")
+    assert res.status_code == 200
+    data = res.json()
+    assert "weather" in data
+    assert "temperature_c" in data["weather"]
+    assert "rainfall_rate_mm_hr" in data["weather"]
+
+def test_dynamic_predict_endpoint():
+    res = client.get("/api/dynamic/predict?lat=17.4933&lng=78.3914&name=Kukatpally")
+    assert res.status_code == 200
+    data = res.json()
+    assert "flood_risk" in data
+    assert "probability_pct" in data["flood_risk"]
+    assert "risk_level" in data["flood_risk"]
+    assert "nowcast_timeline" in data["flood_risk"]
+    assert len(data["flood_risk"]["nowcast_timeline"]) == 5
+    assert "dashboard" in data
+

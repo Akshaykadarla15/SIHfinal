@@ -1,10 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useFlood } from '../context/FloodContext';
 import { useAuth, DEMO_ACCOUNTS } from '../context/AuthContext';
+import { DynamicLocationBar } from './DynamicLocationBar';
 import { CloudRain, Bell, MapPin, Shield, Zap, RotateCcw, ChevronDown, UserCheck, AlertTriangle } from 'lucide-react';
 
 export const Header = ({ onOpenAlerts, onOpenLogin }) => {
-  const { city, setCity, notificationCount, isSimulatingRainfall, triggerHeavyRainfall, resetSimulation } = useFlood();
+  const {
+    city,
+    setCity,
+    activeLocation,
+    selectDynamicLocation,
+    notificationCount,
+    isSimulatingRainfall,
+    triggerHeavyRainfall,
+    resetSimulation
+  } = useFlood();
   const { currentUser, switchRole } = useAuth();
   const [currentTime, setCurrentTime] = useState('');
   const [isRoleMenuOpen, setIsRoleMenuOpen] = useState(false);
@@ -20,10 +30,12 @@ export const Header = ({ onOpenAlerts, onOpenLogin }) => {
   }, []);
 
   const cities = [
-    { name: 'Hyderabad', label: 'Hyderabad, Telangana' },
-    { name: 'Mumbai', label: 'Mumbai, Maharashtra' },
-    { name: 'Delhi', label: 'New Delhi, NCR' },
-    { name: 'Chennai', label: 'Chennai, Tamil Nadu' }
+    { name: 'Hyderabad', label: 'Hyderabad, Telangana', lat: 17.3850, lng: 78.4867 },
+    { name: 'Mumbai', label: 'Mumbai, Maharashtra', lat: 19.0760, lng: 72.8777 },
+    { name: 'Delhi', label: 'New Delhi, NCR', lat: 28.6139, lng: 77.2090 },
+    { name: 'Chennai', label: 'Chennai, Tamil Nadu', lat: 13.0827, lng: 80.2707 },
+    { name: 'Bengaluru', label: 'Bengaluru, Karnataka', lat: 12.9716, lng: 77.5946 },
+    { name: 'Kolkata', label: 'Kolkata, West Bengal', lat: 22.5726, lng: 88.3639 }
   ];
 
   return (
@@ -59,18 +71,7 @@ export const Header = ({ onOpenAlerts, onOpenLogin }) => {
             <h1 style={{ fontSize: '1.25rem', color: '#0f172a', fontWeight: 800, margin: 0, letterSpacing: '-0.02em' }}>
               Urban Flood Nowcasting System
             </h1>
-            <span style={{
-              background: '#e0f2fe',
-              color: '#0369a1',
-              fontSize: '0.68rem',
-              fontWeight: 700,
-              padding: '2px 8px',
-              borderRadius: '999px',
-              border: '1px solid #bae6fd',
-              textTransform: 'uppercase'
-            }}>
-              SIH 2024 AI Prototype
-            </span>
+
           </div>
           <div style={{ fontSize: '0.78rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span>Live Early Warning & Flash Flood Nowcasting</span>
@@ -80,35 +81,53 @@ export const Header = ({ onOpenAlerts, onOpenLogin }) => {
         </div>
       </div>
 
-      {/* Center Controls: City Selector & Simulation Trigger */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-        {/* City Selector */}
+      {/* Center Controls: Dynamic GPS Location Bar, Presets & Simulation Trigger */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        {/* Real-time GPS Auto-detect & Global Locality Search */}
+        <DynamicLocationBar
+          activeLocation={activeLocation}
+          onSelectLocation={(loc) => {
+            selectDynamicLocation(loc);
+          }}
+        />
+
+        {/* Quick Benchmark Preset Selector */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '8px',
+          gap: '6px',
           background: '#f8fafc',
           border: '1px solid #cbd5e1',
-          padding: '6px 12px',
+          padding: '6px 10px',
           borderRadius: '8px'
         }}>
-          <MapPin size={16} color="#0284c7" />
-          <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>City:</span>
+          <MapPin size={15} color="#0284c7" />
           <select
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
+            value={cities.some(c => c.name.toLowerCase() === (city || '').toLowerCase()) ? city : ''}
+            onChange={(e) => {
+              const selected = cities.find(c => c.name === e.target.value);
+              if (selected) {
+                selectDynamicLocation({
+                  name: selected.name,
+                  lat: selected.lat,
+                  lng: selected.lng,
+                  isDynamic: false
+                });
+              }
+            }}
             style={{
               background: 'transparent',
               border: 'none',
-              fontSize: '0.88rem',
+              fontSize: '0.82rem',
               fontWeight: 700,
               color: '#0f172a',
               cursor: 'pointer',
               outline: 'none'
             }}
           >
+            <option value="" disabled>{activeLocation?.isDynamic ? '📍 Custom Location' : 'Quick City'}</option>
             {cities.map(c => (
-              <option key={c.name} value={c.name}>{c.label}</option>
+              <option key={c.name} value={c.name}>{c.name}</option>
             ))}
           </select>
         </div>

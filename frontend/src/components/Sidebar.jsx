@@ -180,7 +180,7 @@ export const Sidebar = ({ activeTab, onTabChange }) => {
         </nav>
       </div>
 
-      {/* Footer Info / Hackathon Credential box */}
+      {/* Footer Info / Credential box */}
       <div style={{
         background: '#f8fafc',
         border: '1px solid #e2e8f0',
@@ -191,9 +191,9 @@ export const Sidebar = ({ activeTab, onTabChange }) => {
       }}>
         <div style={{ fontWeight: 700, color: '#0f172a', marginBottom: '3px', display: 'flex', alignItems: 'center', gap: '6px' }}>
           <HelpCircle size={14} color={currentTheme.activeIcon} />
-          <span>Smart India Hackathon</span>
+          <span>Disaster Management Cell</span>
         </div>
-        <div>Urban Flood Nowcasting System prototype designed for municipal disaster authorities.</div>
+        <div>Urban Flood Nowcasting System for municipal disaster management authorities.</div>
       </div>
     </aside>
   );
